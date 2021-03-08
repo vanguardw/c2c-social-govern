@@ -49,4 +49,11 @@ public class ReviewerServiceImpl implements ReviewerService {
         return reviewers;
 
     }
+
+    @Override
+    public void finishVote(Long reportTaskId, Long reviewerId) {
+        ReviewerTaskStatus reviewerTaskStatus = reviewerTaskStatusRepository.findByReportTaskIdAndReviewerId(reportTaskId, reviewerId);
+        reviewerTaskStatus.setStatus(ReviewerTaskStatus.FINISHED);
+        reviewerTaskStatusRepository.save(reviewerTaskStatus);
+    }
 }

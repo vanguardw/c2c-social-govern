@@ -21,6 +21,7 @@ public class ReportService {
     private ReportRepository reportRepository;
 
     public void addReport(ReportTask reportTask) {
+        reportTask.setVoteResult(ReportTask.VOTE_RESULT_UNKNOW);
         reportRepository.save(reportTask);
     }
 

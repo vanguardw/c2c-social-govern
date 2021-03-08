@@ -1,7 +1,12 @@
 package com.vanguard.c2c.social.govern.reward.service;
 
 import com.vanguard.c2c.social.govern.reward.api.RewardService;
+import com.vanguard.c2c.social.govern.reward.domain.RewardCoin;
+import com.vanguard.c2c.social.govern.reward.repository.RewardCoinRepository;
 import org.apache.dubbo.config.annotation.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 /**
  * @Title: 奖励服务接口实现
@@ -18,5 +23,16 @@ import org.apache.dubbo.config.annotation.Service;
 )
 public class RewardServiceImpl implements RewardService {
 
+    @Autowired
+    private RewardCoinRepository rewardCoinRepository;
 
+    @Override
+    public void giveReward(List<Long> reviewerIds) {
+        for(Long reviewerId : reviewerIds) {
+            RewardCoin rewardCoin = new RewardCoin();
+            rewardCoin.setReviewerId(reviewerId);
+            rewardCoin.setCoins(10L);
+            rewardCoinRepository.save(rewardCoin);
+        }
+    }
 }

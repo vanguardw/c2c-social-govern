@@ -20,5 +20,14 @@ public interface ReviewerService {
      */
     List<Long> selectReviewer(Long reportTaskId);
 
+    /**
+     * 调用评审员服务，标记本次投票结束
+     * @param reportTaskId, reviewerId
+     * @return void
+     * @author Vanguard
+     * @date 21/3/8 21:49
+     */
+    void finishVote(Long reportTaskId, Long reviewerId);
+
 
 }

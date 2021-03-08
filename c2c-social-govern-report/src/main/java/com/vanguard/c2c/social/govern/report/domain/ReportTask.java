@@ -13,6 +13,12 @@ import javax.persistence.*;
 @Table(name = "t_report_task")
 public class ReportTask {
 
+    public static final Integer VOTE_RESULT_UNKNOW = -1;
+
+    public static final Integer VOTE_RESULT_APPROVED = 1;
+
+    public static final Integer VOTE_RESULT_UNAPPROVED = 0;
+
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
@@ -27,6 +33,9 @@ public class ReportTask {
 
     @Column(name = "target_id")
     private Long targetId;
+
+    @Column(name = "vote_result")
+    private Integer voteResult;
 
     public Long getId() {
         return id;
@@ -66,5 +75,13 @@ public class ReportTask {
 
     public void setTargetId(Long targetId) {
         this.targetId = targetId;
+    }
+
+    public Integer getVoteResult() {
+        return voteResult;
+    }
+
+    public void setVoteResult(Integer voteResult) {
+        this.voteResult = voteResult;
     }
 }

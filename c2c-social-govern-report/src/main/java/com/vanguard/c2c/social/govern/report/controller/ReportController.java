@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -69,8 +70,26 @@ public class ReportController {
         // 对举报任务进行投票
         reportTaskVoteService.vote(reportTaskVote);
 
+        // 通知评审员完成投票
+        reviewerService.finishVote(reportTaskVote.getReportTaskId(), reportTaskVote.getReviewerId());
+
         // 对举报任务进行归票
-        reportTaskVoteService.calculateVotes(reportTaskVote.getReportTaskId());
+        Boolean hasFinishedVote = reportTaskVoteService.calculateVotes(reportTaskVote.getReportTaskId());
+
+        // 举报投票任务得到投票结果
+        if(hasFinishedVote) {
+            // 发放奖励
+            List<ReportTaskVote> taskVoteList = reportTaskVoteService.getByReportTaskId(reportTaskVote.getReportTaskId());
+            List<Long> reviewerIds = new ArrayList<>();
+
+            for(ReportTaskVote vote : taskVoteList) {
+                reviewerIds.add(vote.getReviewerId());
+            }
+            rewardService.giveReward(reviewerIds);
+
+            // 推送消息到MQ，告知其他系统，本次评审结果
+            System.out.println("推送消息到MQ，告知其他系统，本次评审结果");
+        }
     }
 
 }

@@ -1,6 +1,8 @@
 package com.vanguard.c2c.social.govern.report.service;
 
+import com.vanguard.c2c.social.govern.report.domain.ReportTask;
 import com.vanguard.c2c.social.govern.report.domain.ReportTaskVote;
+import com.vanguard.c2c.social.govern.report.repository.ReportRepository;
 import com.vanguard.c2c.social.govern.report.repository.ReportTaskVoteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ public class ReportTaskVoteService {
     @Autowired
     private ReportTaskVoteRepository reportTaskVoteRepository;
 
+    @Autowired
+    private ReportRepository reportRepository;
     public void initVote(List<Long> reviewers, Long reportTaskId) {
         for(Long reviewerId : reviewers) {
             ReportTaskVote reportTaskVote = new ReportTaskVote();
@@ -46,24 +50,41 @@ public class ReportTaskVoteService {
     /**
      * 对举报任务进行归票
      * @param reportTaskId
-     * @return void
+     * @return Boolean
      * @author Vanguard
      * @date 21/3/8 20:42
      */
-    public void calculateVotes(Long reportTaskId) {
+    public Boolean calculateVotes(Long reportTaskId) {
+        boolean isApproved = false;
         List<ReportTaskVote> reportTaskVoteList = reportTaskVoteRepository.findByReportTaskId(reportTaskId);
         // 大多数的投票数
-        Integer quorum = reportTaskVoteList.size() / 2 + 1;
-
+        int quorum = reportTaskVoteList.size() / 2 + 1;
         int approvedVotes = 0;
         int unapprovedVotes = 0;
-        for(ReportTaskVote reportTaskVote : reportTaskVoteList) {
-            if(ReportTaskVote.APPROVED.equals(reportTaskVote.getVoteResult())) {
+        for (ReportTaskVote reportTaskVote : reportTaskVoteList) {
+            if (ReportTaskVote.APPROVED.equals(reportTaskVote.getVoteResult())) {
                 approvedVotes++;
             }
-            if(ReportTaskVote.UNAPPROVED.equals(reportTaskVote.getVoteResult())) {
+            if (ReportTaskVote.UNAPPROVED.equals(reportTaskVote.getVoteResult())) {
                 unapprovedVotes++;
             }
         }
+
+        if (approvedVotes > quorum || unapprovedVotes > quorum) {
+            ReportTask reportTask = new ReportTask();
+            reportTask.setId(reportTaskId);
+            if(approvedVotes > quorum) {
+                reportTask.setVoteResult(ReportTask.VOTE_RESULT_APPROVED);
+            } else {
+                reportTask.setVoteResult(ReportTask.VOTE_RESULT_UNAPPROVED);
+            }
+            reportRepository.save(reportTask);
+            isApproved = true;
+        }
+        return isApproved;
+    }
+
+    public List<ReportTaskVote> getByReportTaskId(Long reportTaskId) {
+        return reportTaskVoteRepository.findByReportTaskId(reportTaskId);
     }
 }
