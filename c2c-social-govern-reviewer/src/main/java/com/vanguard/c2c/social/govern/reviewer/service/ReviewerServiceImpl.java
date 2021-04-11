@@ -5,6 +5,7 @@ import com.vanguard.c2c.social.govern.reviewer.domain.ReviewerTaskStatus;
 import com.vanguard.c2c.social.govern.reviewer.repository.ReviewerTaskStatusRepository;
 import org.apache.dubbo.config.annotation.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ public class ReviewerServiceImpl implements ReviewerService {
     private ReviewerTaskStatusRepository reviewerTaskStatusRepository;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public List<Long> selectReviewer(Long reportTaskId) {
 
         // 模拟通过算法选择评审员

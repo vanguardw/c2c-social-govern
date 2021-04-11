@@ -24,7 +24,7 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: 127.0.0.1:8848,127.0.0.1:8849,127.0.0.1:8850
+        server-addr: 127.0.0.1:8848
 dubbo:
   cloud:
     subscribed-services: c2c-social-govern-reviewer,c2c-social-govern-reward
