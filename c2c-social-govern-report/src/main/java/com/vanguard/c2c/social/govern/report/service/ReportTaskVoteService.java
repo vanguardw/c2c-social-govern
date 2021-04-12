@@ -4,9 +4,13 @@ import com.vanguard.c2c.social.govern.report.domain.ReportTask;
 import com.vanguard.c2c.social.govern.report.domain.ReportTaskVote;
 import com.vanguard.c2c.social.govern.report.repository.ReportRepository;
 import com.vanguard.c2c.social.govern.report.repository.ReportTaskVoteRepository;
+import com.vanguard.c2c.social.govern.reviewer.api.ReviewerService;
+import com.vanguard.c2c.social.govern.reward.api.RewardService;
+import org.apache.dubbo.config.annotation.Reference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,6 +25,17 @@ public class ReportTaskVoteService {
 
     @Autowired
     private ReportTaskVoteRepository reportTaskVoteRepository;
+
+
+    @Reference(version = "1.0.0",
+            interfaceClass = RewardService.class,
+            cluster = "failfast")
+    private RewardService rewardService;
+
+    @Reference(version = "1.0.0",
+            interfaceClass = ReviewerService.class,
+            cluster = "failfast")
+    private ReviewerService reviewerService;
 
     @Autowired
     private ReportRepository reportRepository;
@@ -45,6 +60,27 @@ public class ReportTaskVoteService {
         ReportTaskVote taskVote = reportTaskVoteRepository.findByReportTaskIdAndReviewerId(reportTaskVote.getReportTaskId(), reportTaskVote.getReviewerId());
         taskVote.setVoteResult(reportTaskVote.getVoteResult());
         reportTaskVoteRepository.save(taskVote);
+
+        // 通知评审员完成投票
+        reviewerService.finishVote(reportTaskVote.getReportTaskId(), reportTaskVote.getReviewerId());
+
+        // 对举报任务进行归票
+        Boolean hasFinishedVote = this.calculateVotes(reportTaskVote.getReportTaskId());
+
+        // 举报投票任务得到投票结果
+        if(hasFinishedVote) {
+            // 发放奖励
+            List<ReportTaskVote> taskVoteList = this.getByReportTaskId(reportTaskVote.getReportTaskId());
+            List<Long> reviewerIds = new ArrayList<>();
+
+            for(ReportTaskVote vote : taskVoteList) {
+                reviewerIds.add(vote.getReviewerId());
+            }
+            rewardService.giveReward(reviewerIds);
+
+            // 推送消息到MQ，告知其他系统，本次评审结果
+            System.out.println("推送消息到MQ，告知其他系统，本次评审结果");
+        }
     }
 
     /**

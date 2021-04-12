@@ -26,19 +26,9 @@ import java.util.List;
 @RequestMapping("report")
 public class ReportController {
 
-
-    @Reference(version = "1.0.0",
-            interfaceClass = ReviewerService.class,
-            cluster = "failfast")
-    private ReviewerService reviewerService;
-
-    @Reference(version = "1.0.0",
-            interfaceClass = RewardService.class,
-            cluster = "failfast")
-    private RewardService rewardService;
-
     @Autowired
     private ReportService reportService;
+
 
     @Autowired
     private ReportTaskVoteService reportTaskVoteService;
@@ -47,15 +37,6 @@ public class ReportController {
     public ResponseEntity<Void> report(@RequestBody ReportTask reportTask) {
         // 在本地新增一个评审任务
         reportService.addReport(reportTask);
-
-        // 调用评审员服务，选择一批评审员，并对评审员状态进行初始化
-        List<Long> reviewers = reviewerService.selectReviewer(reportTask.getId());
-
-        // 初始化评审员投票任务的投票状态
-        reportTaskVoteService.initVote(reviewers, reportTask.getId());
-
-        // 模拟发送PUSH消息给评审员
-        System.out.println("模拟发送push消息给评审员.....");
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
@@ -70,26 +51,7 @@ public class ReportController {
         // 对举报任务进行投票
         reportTaskVoteService.vote(reportTaskVote);
 
-        // 通知评审员完成投票
-        reviewerService.finishVote(reportTaskVote.getReportTaskId(), reportTaskVote.getReviewerId());
 
-        // 对举报任务进行归票
-        Boolean hasFinishedVote = reportTaskVoteService.calculateVotes(reportTaskVote.getReportTaskId());
-
-        // 举报投票任务得到投票结果
-        if(hasFinishedVote) {
-            // 发放奖励
-            List<ReportTaskVote> taskVoteList = reportTaskVoteService.getByReportTaskId(reportTaskVote.getReportTaskId());
-            List<Long> reviewerIds = new ArrayList<>();
-
-            for(ReportTaskVote vote : taskVoteList) {
-                reviewerIds.add(vote.getReviewerId());
-            }
-            rewardService.giveReward(reviewerIds);
-
-            // 推送消息到MQ，告知其他系统，本次评审结果
-            System.out.println("推送消息到MQ，告知其他系统，本次评审结果");
-        }
     }
 
 }
