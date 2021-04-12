@@ -12,6 +12,7 @@ import com.vanguard.c2c.social.govern.report.domain.ReportTask;
 import com.vanguard.c2c.social.govern.report.repository.ReportRepository;
 import com.vanguard.c2c.social.govern.reviewer.api.ReviewerService;
 import com.vanguard.c2c.social.govern.reward.api.RewardService;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Reference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,12 +34,12 @@ public class ReportService {
     @Autowired
     private ReportRepository reportRepository;
 
-    @Reference(version = "1.0.0",
+    @DubboReference(version = "1.0.0",
             interfaceClass = RewardService.class,
             cluster = "failfast")
     private RewardService rewardService;
 
-    @Reference(version = "1.0.0",
+    @DubboReference(version = "1.0.0",
             interfaceClass = ReviewerService.class,
             cluster = "failfast")
     private ReviewerService reviewerService;
