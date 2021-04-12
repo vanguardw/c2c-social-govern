@@ -47,10 +47,10 @@ public class ReportController {
     }
 
     @PostMapping("/vote")
-    public void vote(@RequestBody ReportTaskVote reportTaskVote) {
+    public ResponseEntity<Void> vote(@RequestBody ReportTaskVote reportTaskVote) {
         // 对举报任务进行投票
         reportTaskVoteService.vote(reportTaskVote);
-
+        return ResponseEntity.status(HttpStatus.CREATED).build();
 
     }
 
