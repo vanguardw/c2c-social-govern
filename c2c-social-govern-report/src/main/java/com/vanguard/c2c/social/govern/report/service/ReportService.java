@@ -12,6 +12,7 @@ import com.vanguard.c2c.social.govern.report.domain.ReportTask;
 import com.vanguard.c2c.social.govern.report.repository.ReportRepository;
 import com.vanguard.c2c.social.govern.reviewer.api.ReviewerService;
 import com.vanguard.c2c.social.govern.reward.api.RewardService;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Reference;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +64,7 @@ public class ReportService {
     @Autowired
     private ReportTaskVoteService reportTaskVoteService;
 
+    @GlobalTransactional
     public void addReport(ReportTask reportTask) {
         reportTask.setVoteResult(ReportTask.VOTE_RESULT_UNKNOW);
         reportRepository.save(reportTask);
